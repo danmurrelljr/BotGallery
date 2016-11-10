@@ -50,15 +50,6 @@ class BotViewController: UIViewController, KeyboardObservation {
         
         setupView()
         setupViewHierarchy()
-        
-        bot.startConversation { [weak self](json, error) in
-
-            print("json: \(json)")
-            
-            if let json = json {
-                self?.process(json: json)
-            }
-        }
     }
     
     
@@ -68,6 +59,8 @@ class BotViewController: UIViewController, KeyboardObservation {
         if let textInputViewBottomConstraint = textInputViewBottomConstraint {
             addKeyboardFrameWillChangeObserver(forView: textInputView, withBottomConstraint: textInputViewBottomConstraint)
         }
+        
+        resumeIfNecessary(bot: bot)
     }
     
     
@@ -75,6 +68,63 @@ class BotViewController: UIViewController, KeyboardObservation {
         super.viewWillDisappear(animated)
         
         removeKeyboardFrameWillChangeObserver()
+    }
+    
+    
+    private func resumeIfNecessary(bot: PullStringBot) {
+        if bot.active {
+            let title = NSLocalizedString("Resume bot?", comment: "")
+            let message = String(format: NSLocalizedString("There is a currently active conversation with %@.\n\nDo you want to resume it, or start new?", comment: ""), bot.name)
+            let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+            
+            let resumeAction = UIAlertAction(title: NSLocalizedString("Resume", comment: ""), style: UIAlertActionStyle.default) { [weak self] action in
+                self?.continueConversation(withBot: bot)
+            }
+            alert.addAction(resumeAction)
+            
+            let newAction = UIAlertAction(title: NSLocalizedString("New Converation", comment: ""), style: UIAlertActionStyle.default) { [weak self] action in
+                self?.startConversation(withBot: bot)
+            }
+            alert.addAction(newAction)
+            
+            self.present(alert, animated: true, completion: nil)
+        } else {
+            startConversation(withBot: bot)
+        }
+    }
+    
+    
+    private func startConversation(withBot bot: PullStringBot) {
+        
+        bot.startConversation { [weak self](json, error) in
+            
+            print("json: \(json)")
+            
+            if let json = json {
+                self?.process(json: json)
+            }
+        }
+    }
+    
+    
+    private func continueConversation(withBot bot: PullStringBot) {
+        
+        guard let uuid = bot.conversation else {
+            print("Unable to resume the conversation")
+            startConversation(withBot: bot)
+            return
+        }
+        
+        addBubble(withText: NSLocalizedString("Resuming conversation..", comment: ""), orImage: nil, asBot: true)
+        
+        bot.say(text: nil, uuid: uuid) { [weak self](json, error) in
+            print("json: \(json)\n-----------------------------\n\n")
+            
+            if let json = json {
+                self?.process(json: json)
+            }
+        }
+
     }
 }
 
