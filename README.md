@@ -148,4 +148,14 @@ And in BotGalleryViewController.swift, you'd want to replace these values with y
 
 And that's it!
 
+## Using PullStringBot as a framework
+
+Of course you may just want to integrate a PullStringBot into your own app, without the rest of this project.
+
+For that, you need:
+- [PullStringBot.swift](https://github.com/danmurrelljr/BotGallery/blob/master/BotGallery/PullStringBot.swift)
+- [PullStringBotConversation.swift](https://github.com/danmurrelljr/BotGallery/blob/master/BotGallery/PullStringBotConversation.swift)
+
+Add these files to your project, instantiate a PullStringBot (or a subclass, as I did with [ConfigBot.swift](https://github.com/danmurrelljr/BotGallery/blob/master/BotGallery/ConfigBot.swift)) and you're good to go.
+
 Bot Gallery is written for Swift 3. 
